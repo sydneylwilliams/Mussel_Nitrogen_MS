@@ -54,18 +54,18 @@ dir <- here::here("Mussel_Nitrogen_MS-main")
 # mussel density surveys
 # remove mussel aggregations with less than 1 cm of biodeposits
 
-density <- read.csv(paste0(dir, "/", fls[4])) %>%
+density <- read.csv(paste0(dir, "/", fls[5])) %>%
   filter(BiodepositDepth_cm > 1 | is.na(BiodepositDepth_cm))
 
 # crab and stem density surveys
 # data used for supplemental bar charts (no analyses) below
-crabsAndstems <- read.csv(paste0(dir, "/", fls[1])) %>% left_join(density %>% filter(Year == "2020"))
+crabsAndstems <- read.csv(paste0(dir, "/", fls[2])) %>% left_join(density %>% filter(Year == "2020"))
 
 # porewater data
-porewater <- read.csv(paste0(dir, "/", fls[5]))
+porewater <- read.csv(paste0(dir, "/", fls[6]))
 
 # leaf clip data
-leaf <- read.csv(paste0(dir, "/", fls[3]))
+leaf <- read.csv(paste0(dir, "/", fls[4]))
 
 # sedimental slurry incubations
 
@@ -74,7 +74,7 @@ leaf <- read.csv(paste0(dir, "/", fls[3]))
 # join with incubation data
 # calculate areal rates (total sediment surface area/total sediment volume)*approximate volume of water in incubation (0.044 L -- see incubation data)
 
-survey_cores <- read.csv(paste0(dir, "/", fls[7])) %>%
+survey_cores <- read.csv(paste0(dir, "/", fls[8])) %>%
   group_by(AreaID) %>%
   summarize(Cores = max(CoreNumber),
             totalVol_L = sum(Vol_mL)/1000,
@@ -86,9 +86,9 @@ survey_cores <- read.csv(paste0(dir, "/", fls[7])) %>%
 # calculate umols of analytes by multiplying by water volume in microscosm
 # determine elapsed time between capping and sacrificing falcon tube for each time point
 
-survey_N <- read.csv(paste0(dir, "/", fls[9])) %>%
-  left_join(read.csv(paste0(dir, "/", fls[10]))) %>%
-  left_join(read.csv(paste0(dir, "/", fls[8]))) %>%
+survey_N <- read.csv(paste0(dir, "/", fls[10])) %>%
+  left_join(read.csv(paste0(dir, "/", fls[11]))) %>%
+  left_join(read.csv(paste0(dir, "/", fls[9]))) %>%
   pivot_longer(cols = c("uMN", "uMO2", "uMNOx", "uMNH4"),
                names_to = "analyte",
                values_to = "umols_L") %>%
