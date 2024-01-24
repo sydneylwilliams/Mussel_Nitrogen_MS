@@ -1,0 +1,51 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: >-
+  Density-dependent influence of ribbed mussels on salt
+  marsh nitrogen pools and processes
+message: >-
+  If you use this dataset, please cite it using the metadata
+  from this file.
+type: dataset
+authors:
+  - given-names: Sydney
+    family-names: Williams
+    email: sydney.williams@ufl.edu
+    affiliation: University of Florida
+    orcid: 'https://orcid.org/0000-0002-9176-1838'
+  - given-names: Hallie
+    family-names: Fischman
+    email: halliefischman@ufl.edu
+    affiliation: University of Florida
+    orcid: 'https://orcid.org/0000-0002-1058-1078'
+  - given-names: Christine
+    family-names: Angelini
+    email: christine.angelini@essie.ufl.edu
+    affiliation: University of Florida
+    orcid: 'https://orcid.org/0000-0002-6669-5269'
+  - given-names: Ashley
+    family-names: Smyth
+    email: ashley.smyth@ufl.edu
+    affiliation: University of Florida
+    orcid: 'https://orcid.org/0000-0002-6649-1864'
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.10561422
+    description: >-
+      Data repository for a study conducted near Sapelo
+      Island, GA that quantifies the effects of ribbed
+      mussel presence and density on nitrogen pools and
+      processes
+repository-code: 'https://github.com/sydneylwilliams/Mussel_Nitrogen_MS.git'
+abstract: "1.\tBivalves are becoming an increasingly popular tool to counteract eutrophication, particularly in vegetated coastal ecosystems where synergistic interactions between bivalves and plants can govern important N sequestration pathways. In turn, new calls to evaluate how bivalve densities modify N pools and processes across multiple scales have surfaced.\n2.\tRibbed mussels, Geukensia demissa, and their relationship with smooth cordgrass present a classic demonstration of positive bivalve-plant interactions and offer a useful model for assessing density dependence. We measure porewater ammonium concentrations, N stable isotope signatures in cordgrass tissue, and sediment N fluxes in mussel aggregations and in cordgrass only plots across a southeastern U.S. salt marsh. \n3.\tIn addition to measuring the effect of mussel presence, we evaluate mussel density dependence through a multiscale approach. At the local scale, we quantify mussel density effects within their aggregations (ind. m-2) while at a larger landscape scale, we quantify mussel density effects on the cordgras¬¬s only areas they neighbor (ind. ~30 m-2).\n4.\tPorewater ammonium concentrations were halved in mussel biodeposits relative to sediments in cordgrass only areas and negatively related to mussel density within aggregations. Leaf clip ẟ15N signatures were higher (by nearly 2‰) in cordgrass growing among mussel aggregations and increased with increasing local mussel density. Microcosm incubations showed that mussels enhanced N2 flux (i.e., nitrogen removal) and DIN flux (i.e., N regeneration) into the water column, where only nitrogen removal increased with increasing mussel density within aggregations. Across the broader marsh landscape, mussel coverage drove ammonium accumulation and N2 flux in cordgrass only sediments.\n"
+keywords:
+  - density-dependent
+  - bivalve
+  - biodeposition
+  - nitrogen
+  - denitrification
+  - eutrophication
+version: v.1.0.1
+date-released: '2024-01-24'
