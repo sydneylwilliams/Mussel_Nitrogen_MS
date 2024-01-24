@@ -1,5 +1,5 @@
 ---
-title: "Density dependent effects of mussels on nitrogen pools and processes"
+title: "Density-dependent influence of ribbed mussels on salt marsh nitrogen pools and processes"
 author: "Sydney Williams"
 date: "2023-09-08"
 output: html_document
@@ -32,27 +32,40 @@ se <- function(x, na.rm){
 }
 ```
 
-```{r import all data}
+```{r download data from GitHub}
 
-# crabpaper <- read.csv("Writing/Marlous_Porewater_Results.csv") %>%
-#   group_by(CrabTreatment, CordgrassTreatment, MusselTreatment) %>%
-#   summarize(mean = mean(NH4_uM),
-#             se = se(NH4_uM))
+# https://github.com/sydneylwilliams/Mussel_Nitrogen_MS.git
+
+# download a .zip file of repository and unzip
+download.file(url = "https://github.com/sydneylwilliams/Mussel_Nitrogen_MS/archive/refs/heads/main.zip", destfile = "Mussel_Nitrogen_MS.zip")
+
+unzip(zipfile = "Mussel_Nitrogen_MS.zip")
+
+fls <- list.files(
+  here::here("Mussel_Nitrogen_MS-main")
+)
+
+dir <- here::here("Mussel_Nitrogen_MS-main")
+
+```
+
+```{r import and set up data}
 
 # mussel density surveys
 # remove mussel aggregations with less than 1 cm of biodeposits
-density <- read.csv("GitHub/MusselDensity.csv") %>%
+
+density <- read.csv(paste0(dir, "/", fls[4])) %>%
   filter(BiodepositDepth_cm > 1 | is.na(BiodepositDepth_cm))
 
 # crab and stem density surveys
 # data used for supplemental bar charts (no analyses) below
-crabsAndstems <- read.csv("GitHub/Crab&StemDensity.csv") %>% left_join(density %>% filter(Year == "2020"))
+crabsAndstems <- read.csv(paste0(dir, "/", fls[1])) %>% left_join(density %>% filter(Year == "2020"))
 
 # porewater data
-porewater <- read.csv("GitHub/Porewater.csv")
+porewater <- read.csv(paste0(dir, "/", fls[5]))
 
 # leaf clip data
-leaf <- read.csv("GitHub/LeafClips.csv")
+leaf <- read.csv(paste0(dir, "/", fls[3]))
 
 # sedimental slurry incubations
 
@@ -61,23 +74,21 @@ leaf <- read.csv("GitHub/LeafClips.csv")
 # join with incubation data
 # calculate areal rates (total sediment surface area/total sediment volume)*approximate volume of water in incubation (0.044 L -- see incubation data)
 
-survey_cores <- read.csv("GitHub/Slurry_Survey_CoreVolumes.csv") %>%
+survey_cores <- read.csv(paste0(dir, "/", fls[7])) %>%
   group_by(AreaID) %>%
   summarize(Cores = max(CoreNumber),
             totalVol_L = sum(Vol_mL)/1000,
             totalsurfaceA_cm2 = max(CoreNumber)*((2.5/2)^2)*pi) %>%
   mutate(AMicrocosm_cm2 = (totalsurfaceA_cm2/totalVol_L)*0.044)
 
-
 # join MIMS, nutrient, and incubation data together
 # for NOx values below detection limit of Seal AA -- change to detection limit (0.007 uM/L)
 # calculate umols of analytes by multiplying by water volume in microscosm
 # determine elapsed time between capping and sacrificing falcon tube for each time point
 
-survey_N <- read.csv("GitHub/Slurry_Survey_MIMS.csv") %>%
-  left_join(read.csv("GitHub/Slurry_Survey_Nutrients.csv")) %>%
-  left_join(read.csv("GitHub/Slurry_Survey_Incubations.csv")) %>%
-#  mutate(Hour = ifelse(Hour == 0, 1, Hour)) %>%
+survey_N <- read.csv(paste0(dir, "/", fls[9])) %>%
+  left_join(read.csv(paste0(dir, "/", fls[10]))) %>%
+  left_join(read.csv(paste0(dir, "/", fls[8]))) %>%
   pivot_longer(cols = c("uMN", "uMO2", "uMNOx", "uMNH4"),
                names_to = "analyte",
                values_to = "umols_L") %>%
@@ -86,26 +97,6 @@ survey_N <- read.csv("GitHub/Slurry_Survey_MIMS.csv") %>%
          capDateTime = as.POSIXct(paste(Date, CapTime), format = "%m/%d/%Y %H:%M"),
          sacrificeDateTime = as.POSIXct(paste(Date, SacrificeTime), format = "%m/%d/%Y %H:%M"),
          elapsedTime = as.numeric(((capDateTime - sacrificeDateTime)*-1)/60))
-#  rbind(survey_N_T0)
-
-survey_N %>% filter(Hour == 1,
-                    analyte != "uMO2") %>%
-        group_by(AreaType, analyte) %>%
-         summarize(mean = mean(umols, na.rm = T)) %>%
-  mutate(AreaType = ifelse(is.na(AreaType), "water blank", AreaType))
-
-# ratio_N <- read.csv("GitHub/Slurry_Ratio_MIMS.csv") %>%
-#   left_join(read.csv("GitHub/Slurry_Ratio_Nutrients.csv")) %>%
-#   left_join(read.csv("GitHub/Slurry_Ratio_Incubations.csv")) %>%
-#   pivot_longer(cols = c("uMN", "uMO2", "uMNOx", "uMNH4"),
-#                names_to = "analyte",
-#                values_to = "umols_L") %>%
-#   mutate(umols_L_detection = ifelse(analyte == "uMNOx" & umols_L < 0.007, 0.007, umols_L),
-#          umols = umols_L_detection * ApproxWaterVolume_L,
-#          capDateTime = as.POSIXct(paste(Date, CapTime), format = "%m/%d/%Y %H:%M"),
-#          sacrificeDateTime = as.POSIXct(paste(Date, SacrificeTime), format = "%m/%d/%Y %H:%M"),
-#          elapsedTime = as.numeric(((capDateTime - sacrificeDateTime)*-1)/60)) 
-
 ```
 
 ###Porewater Analyses
@@ -667,102 +658,4 @@ ModelEstimateFT <- list(pw_group_pos, pw_local_pos, pw_neigh_pos,
   border_inner_h()
 
 save_as_pptx(ModelEstimateFT, path = "Figures/ModelEstimateSummary_new.pptx")
-
-
-
-```
-
-
-
-
-
-
-
-###Experimental ratio slurries
-
-```{plot raw response data to determine outlier removal for ratio expermient}
-
-# 6 hr should be removed 
-ggplot(data = ratio_N %>% 
-         #filter(Ratio != "WB") %>%
-         mutate(analyte = factor(analyte,
-                                 levels = c("uMN", "uMO2", "uMNOx", "uMNH4"),
-                                 labels = c("N", "O2", "NOx", "NH4"))),
-       aes(x = elapsedTime, y = umols)) +
-  geom_point(shape = 1, size = 3, aes(color = as.factor(Replicate))) +
-  geom_smooth(method = "lm", se = T, lwd = 1, color = "black") +
-  facet_grid(analyte~Ratio, scales = "free") +
-  theme_tufte() +
-  theme(axis.line = element_line())
-
-```
-
-```{r ratio slurry rate regressions}
-ratio_regdata <- ratio_N %>%
-  mutate(umols = ifelse(RemoveN == "Y" & analyte == "uMN", NA,
-                               ifelse(RemoveO2 == "Y" & analyte == "uMO2", NA, 
-                                      ifelse(RemoveNOx == "Y" & analyte == "uMNOx", NA,
-                                             ifelse(RemoveNH4 == "Y" & analyte == "uMNH4", NA, umols)))))
-
-N2_ratio <- bf(umols ~ 0 + elapsedTime*Ratio)
-
-ratio_model <- brm(
-  N2_ratio,
-  data = ratio_regdata,
-  chains = 4,
-  cores = 4,
-  iter = 10000,
-  backend = "cmdstanr",
-  refresh = 0
-)
-
-# check fit
-
-pp_check(ratio_model, ndraws = 100, resp = "umols")
-
-# summarize posteriors
-
-ratio_pos <- merge(summarise_draws(ratio_model), 
-                         summarise_draws(ratio_model, ~quantile(.x, probs = c(0.025, 0.975))), 
-                         by = "variable")
-
-# hypothesis testing
-hypothesis(ratio_model, "elapsedTime + elapsedTime:Ratio50BD50S = elapsedTime + elapsedTime:Ratio25BD75S", robust = T)[[1]]
-
-ratio_plot <- plot(conditional_effects(ratio_model),
-     points = TRUE,
-     theme = theme_tufte(),
-     ask = FALSE)
-
-ratio_plot_ordered <- ratio_plot[["elapsedTime:Ratio"]][["data"]] %>%
-  mutate(ratios = as.factor(effect2__, levels = c("100B", "100S",)))
-
-ratio_plot[["elapsedTime:Ratio"]]+ 
-  facet_wrap(~effect2__, ncol = 5) +
-  theme(axis.line = element_line())
-```
-
-```{r ratio slurry rate regressions}
-# regressions WITH OUTLIERS REMOVED
-
-ratio_reg <- as_tibble(survey_MIMS %>%
-                          mutate(umols = ifelse(RemoveN == "Y" & analyte == "uMN", NA,
-                                                ifelse(RemoveO2 == "Y" & analyte == "uMO2", NA, umols)))) %>%
-  group_by(AreaID, analyte) %>%
-  nest() %>%
-  mutate(fit = map(data, ~lm(umols ~ elapsedTime, data = .x)),
-         tidied = map(fit, tidy),
-         glanced = map(fit, glance),
-         augmented = map(fit, augment))
-
-# pull slopes and correct for water blank rate estimates
-
-survey_slope <- survey_reg %>%
-  unnest(tidied, glanced) %>%
-  dplyr::select(c("AreaID", "analyte", "term", "estimate", "adj.r.squared")) %>%
-  mutate(term = ifelse(term == "(Intercept)", NA, term),
-         estimate_WBcorrected = ifelse(analyte == "uMN", (estimate - 0.00822),
-                                       ifelse(analyte == "uMO2", (estimate - (-0.38341)), NA))) %>%
-  drop_na(term)
-
 ```
