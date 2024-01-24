@@ -1,0 +1,153 @@
+﻿AreaID,AreaType,CoreNumber,Vol_mL
+N1,mussels,1,15
+N1,mussels,2,17
+N1,mussels,3,25
+N1,mussels,4,22
+A1,mussels,1,15
+A1,mussels,2,19
+A1,mussels,3,17
+A1,mussels,4,16
+A1,mussels,5,13
+A2,mussels,1,15
+A2,mussels,2,16
+A2,mussels,3,10
+A2,mussels,4,14
+A2,mussels,5,14
+A3,mussels,1,13
+A3,mussels,2,16
+A3,mussels,3,20
+A3,mussels,4,14
+A3,mussels,5,8
+N5,mussels,1,16
+N5,mussels,2,20
+N5,mussels,3,19
+N5,mussels,4,16
+N6,mussels,1,22
+N6,mussels,2,21
+N6,mussels,3,19
+N6,mussels,4,15
+A5,mussels,1,25
+A5,mussels,2,15
+A5,mussels,3,17
+A8,mussels,1,22
+A8,mussels,2,20
+A8,mussels,3,30
+A8,mussels,4,11
+N7,mussels,1,26
+N7,mussels,2,9
+N7,mussels,3,24
+N7,mussels,4,25
+N10,mussels,1,23
+N10,mussels,2,20
+N10,mussels,3,13
+N10,mussels,4,23
+L4,mussels,1,19
+L4,mussels,2,26
+L4,mussels,3,19
+L4,mussels,4,12
+L6,mussels,1,15
+L6,mussels,2,16
+L6,mussels,3,16
+L6,mussels,4,23
+L6,mussels,5,10
+L7,mussels,1,9
+L7,mussels,2,19
+L7,mussels,3,26
+L7,mussels,4,16
+L9,mussels,1,14
+L9,mussels,2,10
+L9,mussels,3,24
+L9,mussels,4,15
+L9,mussels,5,18
+L10,mussels,1,23
+L10,mussels,2,12
+L10,mussels,3,23
+L10,mussels,4,25
+C1,mussels,1,22
+C1,mussels,2,15
+C1,mussels,3,15
+C1,mussels,4,22
+C3,mussels,1,17
+C3,mussels,2,20
+C3,mussels,3,15
+C3,mussels,4,11
+C3,mussels,5,11
+C4,mussels,1,19
+C4,mussels,2,24
+C4,mussels,3,9
+C4,mussels,4,14
+C4,mussels,5,11
+ON1,cordgrass only,1,35
+ON1,cordgrass only,2,25
+ON2,cordgrass only,1,25
+ON2,cordgrass only,2,26
+ON2,cordgrass only,3,28
+OA2,cordgrass only,1,18
+OA2,cordgrass only,2,18
+OA2,cordgrass only,3,22
+OA2,cordgrass only,4,16
+OA2,cordgrass only,5,20
+OA3,cordgrass only,1,24
+OA3,cordgrass only,2,18
+OA3,cordgrass only,3,16
+OA3,cordgrass only,4,22
+OA10,cordgrass only,1,20
+OA10,cordgrass only,2,13
+OA10,cordgrass only,3,16
+OA10,cordgrass only,4,15
+OA10,cordgrass only,5,14
+ON3,cordgrass only,1,20
+ON3,cordgrass only,2,21
+ON3,cordgrass only,3,20
+ON3,cordgrass only,4,18
+ON4,cordgrass only,1,17
+ON4,cordgrass only,2,24
+ON4,cordgrass only,3,24
+ON4,cordgrass only,4,16
+ON6,cordgrass only,1,22
+ON6,cordgrass only,2,13
+ON6,cordgrass only,3,25
+ON6,cordgrass only,4,20
+OA9,cordgrass only,1,23
+OA9,cordgrass only,2,21
+OA9,cordgrass only,3,15
+OA9,cordgrass only,4,25
+ON10,cordgrass only,1,21
+ON10,cordgrass only,2,22
+ON10,cordgrass only,3,15
+ON10,cordgrass only,4,20
+OL2,cordgrass only,1,27
+OL2,cordgrass only,2,29
+OL2,cordgrass only,3,16
+OL2,cordgrass only,4,26
+OL3,cordgrass only,1,32
+OL3,cordgrass only,2,27
+OL3,cordgrass only,3,10
+OL3,cordgrass only,4,29
+OL4,cordgrass only,1,15
+OL4,cordgrass only,2,21
+OL4,cordgrass only,3,19
+OL4,cordgrass only,4,20
+OL5,cordgrass only,1,22
+OL5,cordgrass only,2,19
+OL5,cordgrass only,3,15
+OL5,cordgrass only,4,27
+OL8,cordgrass only,1,20
+OL8,cordgrass only,2,18
+OL8,cordgrass only,3,26
+OL8,cordgrass only,4,14
+OL10,cordgrass only,1,23
+OL10,cordgrass only,2,18
+OL10,cordgrass only,3,27
+OL10,cordgrass only,4,20
+OC2,cordgrass only,1,25
+OC2,cordgrass only,2,17
+OC2,cordgrass only,3,25
+OC2,cordgrass only,4,22
+OC3,cordgrass only,1,31
+OC3,cordgrass only,2,19
+OC3,cordgrass only,3,15
+OC3,cordgrass only,4,30
+OC9,cordgrass only,1,29
+OC9,cordgrass only,2,25
+OC9,cordgrass only,3,25

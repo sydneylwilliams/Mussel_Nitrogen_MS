@@ -1,0 +1,81 @@
+﻿AreaID,AreaType,CrabBurrowDensity_.25m2,StemDensity_m2
+A1,mussels,69,244
+A10,mussels,93,236
+A2,mussels,86,328
+A3,mussels,66,212
+A4,mussels,77,192
+A5,mussels,80,196
+A6,mussels,45,180
+A7,mussels,98,132
+A8,mussels,84,264
+A9,mussels,67,212
+C1,mussels,29,212
+C10,mussels,88,208
+C2,mussels,45,192
+C3,mussels,28,164
+C4,mussels,32,180
+C5,mussels,49,180
+C6,mussels,73,168
+C7,mussels,71,256
+C8,mussels,79,140
+C9,mussels,75,188
+L1,mussels,66,156
+L10,mussels,66,224
+L2,mussels,46,140
+L3,mussels,10,84
+L4,mussels,39,136
+L5,mussels,55,132
+L6,mussels,40,104
+L7,mussels,31,124
+L8,mussels,54,196
+L9,mussels,102,132
+N1,mussels,119,124
+N10,mussels,140,144
+N2,mussels,119,124
+N3,mussels,75,200
+N4,mussels,80,172
+N5,mussels,48,148
+N6,mussels,94,200
+N7,mussels,107,244
+N8,mussels,149,160
+N9,mussels,133,168
+OA1,cordgrass only,0,60
+OA10,cordgrass only,0,152
+OA2,cordgrass only,0,36
+OA3,cordgrass only,0,32
+OA4,cordgrass only,0,120
+OA5,cordgrass only,9,24
+OA6,cordgrass only,3,32
+OA7,cordgrass only,33,192
+OA8,cordgrass only,0,88
+OA9,cordgrass only,0,144
+OC1,cordgrass only,0,116
+OC10,cordgrass only,6,112
+OC2,cordgrass only,0,100
+OC3,cordgrass only,3,44
+OC4,cordgrass only,1,48
+OC5,cordgrass only,0,40
+OC6,cordgrass only,0,32
+OC7,cordgrass only,4,68
+OC8,cordgrass only,4,64
+OC9,cordgrass only,22,72
+OL1,cordgrass only,2,192
+OL10,cordgrass only,4,160
+OL2,cordgrass only,1,156
+OL3,cordgrass only,1,180
+OL4,cordgrass only,0,80
+OL5,cordgrass only,4,92
+OL6,cordgrass only,1,116
+OL7,cordgrass only,0,80
+OL8,cordgrass only,4,124
+OL9,cordgrass only,4,156
+ON1,cordgrass only,0,168
+ON10,cordgrass only,7,260
+ON2,cordgrass only,3,204
+ON3,cordgrass only,0,44
+ON4,cordgrass only,0,84
+ON5,cordgrass only,0,80
+ON6,cordgrass only,0,176
+ON7,cordgrass only,31,92
+ON8,cordgrass only,0,136
+ON9,cordgrass only,0,252

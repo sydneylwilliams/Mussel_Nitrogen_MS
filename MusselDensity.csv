@@ -1,0 +1,118 @@
+Year,AreaID,AreaType,LocalMusselDensity_m2,NeighboringMusselDensity_9pim2,BiodepositDepth_cm,SampleCollection
+2020,A1,mussels,216,NA,5,porewater; leaf clips
+2020,A10,mussels,76,NA,11,porewater; leaf clips
+2020,A2,mussels,200,NA,17,porewater; leaf clips
+2020,A3,mussels,104,NA,8,porewater; leaf clips
+2020,A4,mussels,100,NA,7,porewater; leaf clips
+2020,A5,mussels,304,NA,9,porewater; leaf clips
+2020,A6,mussels,200,NA,10,porewater; leaf clips
+2020,A7,mussels,168,NA,8,porewater; leaf clips
+2020,A8,mussels,100,NA,6,porewater; leaf clips
+2020,A9,mussels,68,NA,6,porewater; leaf clips
+2020,C1,mussels,159,NA,10,porewater; leaf clips
+2020,C10,mussels,100,NA,8,porewater; leaf clips
+2020,C2,mussels,260,NA,18,porewater; leaf clips
+2020,C3,mussels,172,NA,13,porewater; leaf clips
+2020,C4,mussels,144,NA,13,porewater; leaf clips
+2020,C5,mussels,172,NA,9,porewater; leaf clips
+2020,C6,mussels,124,NA,4,porewater; leaf clips
+2020,C7,mussels,120,NA,10,porewater; leaf clips
+2020,C8,mussels,84,NA,9,porewater; leaf clips
+2020,C9,mussels,68,NA,8,porewater; leaf clips
+2020,L1,mussels,128,NA,14,porewater; leaf clips
+2020,L10,mussels,60,NA,3,porewater; leaf clips
+2020,L2,mussels,24,NA,1,porewater; leaf clips
+2020,L3,mussels,0,NA,0.5,porewater; leaf clips
+2020,L4,mussels,28,NA,2,porewater; leaf clips
+2020,L5,mussels,56,NA,2,porewater; leaf clips
+2020,L6,mussels,28,NA,2,porewater; leaf clips
+2020,L7,mussels,20,NA,1,porewater; leaf clips
+2020,L8,mussels,8,NA,1,porewater; leaf clips
+2020,L9,mussels,48,NA,2,porewater; leaf clips
+2020,N1,mussels,96,NA,10,porewater; leaf clips
+2020,N10,mussels,172,NA,10,porewater; leaf clips
+2020,N2,mussels,152,NA,12,porewater; leaf clips
+2020,N3,mussels,136,NA,12,porewater; leaf clips
+2020,N4,mussels,228,NA,15,porewater; leaf clips
+2020,N5,mussels,160,NA,9,porewater; leaf clips
+2020,N6,mussels,128,NA,7,porewater; leaf clips
+2020,N7,mussels,248,NA,12,porewater; leaf clips
+2020,N8,mussels,272,NA,6,porewater; leaf clips
+2020,N9,mussels,192,NA,12,porewater; leaf clips
+2020,OA1,cordgrass only,NA,329,NA,porewater; leaf clips
+2020,OA10,cordgrass only,NA,45,NA,porewater; leaf clips
+2020,OA2,cordgrass only,NA,261,NA,porewater; leaf clips
+2020,OA3,cordgrass only,NA,217,NA,porewater; leaf clips
+2020,OA4,cordgrass only,NA,43,NA,porewater; leaf clips
+2020,OA5,cordgrass only,NA,396,NA,porewater; leaf clips
+2020,OA6,cordgrass only,NA,296,NA,porewater; leaf clips
+2020,OA7,cordgrass only,NA,252,NA,porewater; leaf clips
+2020,OA8,cordgrass only,NA,120,NA,porewater; leaf clips
+2020,OA9,cordgrass only,NA,153,NA,porewater; leaf clips
+2020,OC1,cordgrass only,NA,262,NA,porewater; leaf clips
+2020,OC10,cordgrass only,NA,338,NA,porewater; leaf clips
+2020,OC2,cordgrass only,NA,282,NA,porewater; leaf clips
+2020,OC3,cordgrass only,NA,453,NA,porewater; leaf clips
+2020,OC4,cordgrass only,NA,238,NA,porewater; leaf clips
+2020,OC5,cordgrass only,NA,414,NA,porewater; leaf clips
+2020,OC6,cordgrass only,NA,364,NA,porewater; leaf clips
+2020,OC7,cordgrass only,NA,69,NA,porewater; leaf clips
+2020,OC8,cordgrass only,NA,122,NA,porewater; leaf clips
+2020,OC9,cordgrass only,NA,288,NA,porewater; leaf clips
+2020,OL1,cordgrass only,NA,154,NA,porewater; leaf clips
+2020,OL10,cordgrass only,NA,52,NA,porewater; leaf clips
+2020,OL2,cordgrass only,NA,7,NA,porewater; leaf clips
+2020,OL3,cordgrass only,NA,0,NA,porewater; leaf clips
+2020,OL4,cordgrass only,NA,177,NA,porewater; leaf clips
+2020,OL5,cordgrass only,NA,30,NA,porewater; leaf clips
+2020,OL6,cordgrass only,NA,187,NA,porewater; leaf clips
+2020,OL7,cordgrass only,NA,146,NA,porewater; leaf clips
+2020,OL8,cordgrass only,NA,88,NA,porewater; leaf clips
+2020,OL9,cordgrass only,NA,51,NA,porewater; leaf clips
+2020,ON1,cordgrass only,NA,326,NA,porewater; leaf clips
+2020,ON10,cordgrass only,NA,247,NA,porewater; leaf clips
+2020,ON2,cordgrass only,NA,347,NA,porewater; leaf clips
+2020,ON3,cordgrass only,NA,201,NA,porewater; leaf clips
+2020,ON4,cordgrass only,NA,683,NA,porewater; leaf clips
+2020,ON5,cordgrass only,NA,198,NA,porewater; leaf clips
+2020,ON6,cordgrass only,NA,352,NA,porewater; leaf clips
+2020,ON7,cordgrass only,NA,411,NA,porewater; leaf clips
+2020,ON8,cordgrass only,NA,210,NA,porewater; leaf clips
+2020,ON9,cordgrass only,NA,286,NA,porewater; leaf clips
+2023,N1,mussels,338,NA,NA,slurry sediment
+2023,A2,mussels,238,NA,NA,slurry sediment
+2023,A3,mussels,111,NA,NA,slurry sediment
+2023,N5,mussels,131,NA,NA,slurry sediment
+2023,A1,mussels,165,NA,NA,slurry sediment
+2023,N6,mussels,190,NA,NA,slurry sediment
+2023,A5,mussels,204,NA,NA,slurry sediment
+2023,A8,mussels,119,NA,NA,slurry sediment
+2023,N10,mussels,150,NA,NA,slurry sediment
+2023,N7,mussels,203,NA,NA,slurry sediment
+2023,L10,mussels,159,NA,NA,slurry sediment
+2023,L9,mussels,153,NA,NA,slurry sediment
+2023,L7,mussels,309,NA,NA,slurry sediment
+2023,L6,mussels,229,NA,NA,slurry sediment
+2023,L4,mussels,138,NA,NA,slurry sediment
+2023,C1,mussels,306,NA,NA,slurry sediment
+2023,C3,mussels,302,NA,NA,slurry sediment
+2023,C4,mussels,289,NA,NA,slurry sediment
+2023,OA10,cordgrass only,NA,70,NA,slurry sediment
+2023,OA2,cordgrass only,NA,297,NA,slurry sediment
+2023,OA3,cordgrass only,NA,237,NA,slurry sediment
+2023,OA9,cordgrass only,NA,110,NA,slurry sediment
+2023,OC2,cordgrass only,NA,183,NA,slurry sediment
+2023,OC3,cordgrass only,NA,390,NA,slurry sediment
+2023,OC9,cordgrass only,NA,195,NA,slurry sediment
+2023,OL10,cordgrass only,NA,33,NA,slurry sediment
+2023,OL2,cordgrass only,NA,0,NA,slurry sediment
+2023,OL3,cordgrass only,NA,0,NA,slurry sediment
+2023,OL4,cordgrass only,NA,102,NA,slurry sediment
+2023,OL5,cordgrass only,NA,19,NA,slurry sediment
+2023,OL8,cordgrass only,NA,53,NA,slurry sediment
+2023,ON1,cordgrass only,NA,336,NA,slurry sediment
+2023,ON10,cordgrass only,NA,208,NA,slurry sediment
+2023,ON2,cordgrass only,NA,303,NA,slurry sediment
+2023,ON3,cordgrass only,NA,160,NA,slurry sediment
+2023,ON4,cordgrass only,NA,595,NA,slurry sediment
+2023,ON6,cordgrass only,NA,447,NA,slurry sediment

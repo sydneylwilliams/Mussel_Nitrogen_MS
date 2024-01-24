@@ -1,0 +1,768 @@
+---
+title: "Density dependent effects of mussels on nitrogen pools and processes"
+author: "Sydney Williams"
+date: "2023-09-08"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(brms) # Bayesian Regression Models using 'Stan'
+library(cmdstanr) # R Interface to 'CmdStan'
+library(bayesplot) # Plotting for Bayesian Models
+library(here) # A Simpler Way to Find Your Files
+library(tidyverse) 
+library(ggplot2)
+library(ggthemes)
+library(posterior) # summarize draws
+library(emmeans)
+library(flextable)
+library(purrr)
+library(broom)
+library(fitdistrplus)
+
+
+set_cmdstan_path("C:/Program Files/.cmdstan/cmdstan-2.32.2/")
+
+
+# Standard error function
+se <- function(x, na.rm){
+ sd(x, na.rm = T) / sqrt(length(x[!is.na(x)]))
+}
+```
+
+```{r import all data}
+
+# crabpaper <- read.csv("Writing/Marlous_Porewater_Results.csv") %>%
+#   group_by(CrabTreatment, CordgrassTreatment, MusselTreatment) %>%
+#   summarize(mean = mean(NH4_uM),
+#             se = se(NH4_uM))
+
+# mussel density surveys
+# remove mussel aggregations with less than 1 cm of biodeposits
+density <- read.csv("GitHub/MusselDensity.csv") %>%
+  filter(BiodepositDepth_cm > 1 | is.na(BiodepositDepth_cm))
+
+# crab and stem density surveys
+# data used for supplemental bar charts (no analyses) below
+crabsAndstems <- read.csv("GitHub/Crab&StemDensity.csv") %>% left_join(density %>% filter(Year == "2020"))
+
+# porewater data
+porewater <- read.csv("GitHub/Porewater.csv")
+
+# leaf clip data
+leaf <- read.csv("GitHub/LeafClips.csv")
+
+# sedimental slurry incubations
+
+# core data:
+# calculate total volume and surface area of sediment cores 
+# join with incubation data
+# calculate areal rates (total sediment surface area/total sediment volume)*approximate volume of water in incubation (0.044 L -- see incubation data)
+
+survey_cores <- read.csv("GitHub/Slurry_Survey_CoreVolumes.csv") %>%
+  group_by(AreaID) %>%
+  summarize(Cores = max(CoreNumber),
+            totalVol_L = sum(Vol_mL)/1000,
+            totalsurfaceA_cm2 = max(CoreNumber)*((2.5/2)^2)*pi) %>%
+  mutate(AMicrocosm_cm2 = (totalsurfaceA_cm2/totalVol_L)*0.044)
+
+
+# join MIMS, nutrient, and incubation data together
+# for NOx values below detection limit of Seal AA -- change to detection limit (0.007 uM/L)
+# calculate umols of analytes by multiplying by water volume in microscosm
+# determine elapsed time between capping and sacrificing falcon tube for each time point
+
+survey_N <- read.csv("GitHub/Slurry_Survey_MIMS.csv") %>%
+  left_join(read.csv("GitHub/Slurry_Survey_Nutrients.csv")) %>%
+  left_join(read.csv("GitHub/Slurry_Survey_Incubations.csv")) %>%
+#  mutate(Hour = ifelse(Hour == 0, 1, Hour)) %>%
+  pivot_longer(cols = c("uMN", "uMO2", "uMNOx", "uMNH4"),
+               names_to = "analyte",
+               values_to = "umols_L") %>%
+  mutate(umols_L= ifelse(analyte == "uMNOx" & umols_L < 0.007, 0.007, umols_L),
+         umols = umols_L * ApproxWaterVolume_L,
+         capDateTime = as.POSIXct(paste(Date, CapTime), format = "%m/%d/%Y %H:%M"),
+         sacrificeDateTime = as.POSIXct(paste(Date, SacrificeTime), format = "%m/%d/%Y %H:%M"),
+         elapsedTime = as.numeric(((capDateTime - sacrificeDateTime)*-1)/60))
+#  rbind(survey_N_T0)
+
+survey_N %>% filter(Hour == 1,
+                    analyte != "uMO2") %>%
+        group_by(AreaType, analyte) %>%
+         summarize(mean = mean(umols, na.rm = T)) %>%
+  mutate(AreaType = ifelse(is.na(AreaType), "water blank", AreaType))
+
+# ratio_N <- read.csv("GitHub/Slurry_Ratio_MIMS.csv") %>%
+#   left_join(read.csv("GitHub/Slurry_Ratio_Nutrients.csv")) %>%
+#   left_join(read.csv("GitHub/Slurry_Ratio_Incubations.csv")) %>%
+#   pivot_longer(cols = c("uMN", "uMO2", "uMNOx", "uMNH4"),
+#                names_to = "analyte",
+#                values_to = "umols_L") %>%
+#   mutate(umols_L_detection = ifelse(analyte == "uMNOx" & umols_L < 0.007, 0.007, umols_L),
+#          umols = umols_L_detection * ApproxWaterVolume_L,
+#          capDateTime = as.POSIXct(paste(Date, CapTime), format = "%m/%d/%Y %H:%M"),
+#          sacrificeDateTime = as.POSIXct(paste(Date, SacrificeTime), format = "%m/%d/%Y %H:%M"),
+#          elapsedTime = as.numeric(((capDateTime - sacrificeDateTime)*-1)/60)) 
+
+```
+
+###Porewater Analyses
+
+```{r sample location effects on porewater}
+
+pw <- right_join(porewater, density %>% filter(Year == "2020")) %>%
+  mutate(group = paste(AreaType, Layer, sep = " "))
+
+NH4_group <- bf(NH4_uM ~ group) + lognormal()
+
+pw_group <- brm(
+  NH4_group,
+  data = pw,
+  chains = 4,
+  cores = 4,
+  iter = 10000,
+  backend = "cmdstanr",
+  refresh = 0
+)
+
+pp_check(pw_group, ndraws = 100, resp = "NH4uM")
+
+pw_group_pos <- merge(summarise_draws(pw_group), 
+                         summarise_draws(pw_group, ~quantile(.x, probs = c(0.025, 0.975))), 
+                         by = "variable") %>%
+  mutate(Sample = "porewater",
+         Predictor = "sample location")
+
+# difference between non-reference groups
+hypothesis(pw_group, "Intercept + groupmusselsbiodeposit = Intercept + groupmusselssediment", robust = T)[[1]]
+
+pw_group_plot <- plot(conditional_effects(pw_group),
+     points = TRUE,
+     theme = theme_tufte(),
+     point_args = list(width = .2),
+     ask = FALSE)
+
+pw_group_plot[["group"]] +  
+  ylim(0, 400) +
+  theme(axis.line = element_line())
+
+
+```
+
+```{r mussel density effects on porewater}
+
+# join density and porewater data only from 2020 survey and collection from sediment (remove porewater data from biodeposit layer)
+
+pw_md <- pw %>% filter(Layer == "sediment") 
+  
+
+NH4_local <- bf(NH4_uM ~ 1 + LocalMusselDensity_m2) + Gamma(link = "log")
+NH4_neigh <- bf(NH4_uM ~ 1 + NeighboringMusselDensity_9pim2) + Gamma(link = "log")
+
+pw_local <- brm(
+  NH4_local,
+  data = pw_md,
+  chains = 4,
+  cores = 4,
+  iter = 10000,
+  backend = "cmdstanr",
+  refresh = 0
+)
+
+pw_neigh <- brm(
+  NH4_neigh,
+  data = pw_md,
+  chains = 4,
+  cores = 4,
+  iter = 10000,
+  backend = "cmdstanr",
+  refresh = 0
+)
+
+# check fit
+
+pp_check(pw_local, ndraws = 100, resp = "NH4uM")
+pp_check(pw_neigh, ndraws = 100, resp = "NH4uM")
+
+# summarize posteriors
+
+pw_local_pos <- merge(summarise_draws(pw_local), 
+                         summarise_draws(pw_local, ~quantile(.x, probs = c(0.025, 0.975))), 
+                         by = "variable") %>%
+  mutate(Sample = "porewater",
+         Predictor = "local mussel density")
+
+bayes_R2(pw_local)
+
+pw_neigh_pos <- merge(summarise_draws(pw_neigh), 
+                         summarise_draws(pw_neigh, ~quantile(.x, probs = c(0.025, 0.975))), 
+                         by = "variable") %>%
+  mutate(Sample = "porewater",
+         Predictor = "neighboring mussel density")
+
+bayes_R2(pw_neigh)
+
+# plots
+
+pw_local_plot <- plot(conditional_effects(pw_local),
+     points = TRUE,
+     theme = theme_tufte(),
+     ask = FALSE)
+
+pw_neigh_plot <- plot(conditional_effects(pw_neigh),
+     points = TRUE,
+     theme = theme_tufte(),
+     ask = FALSE)
+
+pw_local_plot[["LocalMusselDensity_m2"]] +  
+  ylim(0, 400) +
+  xlim(0, 310) +
+  theme(axis.line = element_line())
+
+pw_neigh_plot[["NeighboringMusselDensity_9pim2"]] +  
+  ylim(0, 400) +
+  xlim(0, 700) +
+  theme(axis.line = element_line())
+
+```
+
+###Leaf Clip Analyses
+
+```{r mussel presence effects on cordgrass d15N}
+
+d15N <- bf(d15N ~ AreaType)
+
+leaf_presence <- brm(
+  d15N,
+  data = leaf,
+  chains = 4,
+  cores = 4,
+  iter = 10000,
+  backend = "cmdstanr",
+  refresh = 0
+)
+
+pp_check(leaf_presence, ndraws = 100, resp = "d15N")
+
+leaf_presence_pos <- merge(summarise_draws(leaf_presence), 
+                         summarise_draws(leaf_presence, ~quantile(.x, probs = c(0.025, 0.975))), 
+                         by = "variable") %>%
+  mutate(Sample = "leaf clip",
+         Predictor = "mussel presence")
+
+leaf_presence_plot <- plot(conditional_effects(leaf_presence),
+     points = TRUE,
+     theme = theme_tufte(),
+     point_args = list(width = .2),
+     ask = FALSE)
+
+leaf_presence_plot[["AreaType"]] +
+  ylim(2, 7) +
+  theme(axis.line = element_line())
+```
+
+```{r mussel density effects on cordgrass d15N}
+
+# join density and porewater data only from 2020 survey and collection from sediment
+
+leaf_md <- right_join(density %>% filter(Year == "2020"), leaf)
+
+d15N_local <- bf(d15N ~ 1 + LocalMusselDensity_m2) 
+d15N_neigh <- bf(d15N ~ 1 + NeighboringMusselDensity_9pim2) 
+
+leaf_local <- brm(
+  d15N_local,
+  data = leaf_md,
+  chains = 4,
+  cores = 4,
+  iter = 10000,
+  backend = "cmdstanr",
+  refresh = 0
+)
+
+leaf_neigh <- brm(
+  d15N_neigh,
+  data = leaf_md,
+  chains = 4,
+  cores = 4,
+  iter = 10000,
+  backend = "cmdstanr",
+  refresh = 0
+)
+
+# check fit
+
+pp_check(leaf_local, ndraws = 100, resp = "d15N")
+pp_check(leaf_neigh, ndraws = 100, resp = "d15N")
+
+# summarize posteriors
+
+leaf_local_pos <- merge(summarise_draws(leaf_local), 
+                         summarise_draws(leaf_local, ~quantile(.x, probs = c(0.025, 0.975))), 
+                         by = "variable") %>%
+  mutate(Sample = "leaf clip",
+         Predictor = "local mussel density")
+
+leaf_neigh_pos <- merge(summarise_draws(leaf_neigh), 
+                         summarise_draws(leaf_neigh, ~quantile(.x, probs = c(0.025, 0.975))), 
+                         by = "variable") %>%
+  mutate(Sample = "leaf clip",
+         Predictor = "neighboring mussel density")
+
+bayes_R2(leaf_local)
+
+# plots
+
+leaf_local_plot <- plot(conditional_effects(leaf_local),
+     points = TRUE,
+     theme = theme_tufte(),
+     ask = FALSE)
+
+leaf_neigh_plot <- plot(conditional_effects(leaf_neigh),
+     points = TRUE,
+     theme = theme_tufte(),
+     ask = FALSE)
+
+leaf_local_plot[["LocalMusselDensity_m2"]] +  
+  ylim(2, 7) +
+  xlim(0, 350) +
+  theme(axis.line = element_line())
+
+leaf_neigh_plot[["NeighboringMusselDensity_9pim2"]] +  
+  ylim(2, 7) +
+  xlim(0, 700) +
+  theme(axis.line = element_line())
+
+```
+
+###Survey-style slurries
+```{plot raw response data to determine outlier removal for survey incubation}
+
+# vizualize each area, separated by AreaType
+# mussel aggregations
+ggplot(data = survey_N %>% 
+         filter(AreaType != "cordgrass only") %>%
+         mutate(analyte = factor(analyte,
+                                 levels = c("uMN", "uMO2", "uMNOx", "uMNH4"),
+                                 labels = c("N", "O2", "NOx", "NH4"))),
+       aes(x = elapsedTime, y = umols)) +
+  geom_point(shape = 1, size = 3, aes(color = as.factor(Replicate))) +
+  geom_smooth(method = "lm", se = T, lwd = 1, color = "black") +
+  facet_grid(analyte~AreaID, scales = "free") +
+  theme_tufte() +
+  theme(axis.line = element_line())
+
+# cordgrass only areas
+ggplot(data = survey_N %>% 
+         filter(AreaType != "mussels") %>%
+         mutate(analyte = factor(analyte, 
+                                 levels = c("uMN", "uMO2", "uMNOx", "uMNH4"),
+                                 labels = c("N", "O2", "NOx", "NH4"))), 
+       aes(x = elapsedTime, y = umols)) +
+  geom_point(shape = 1, size = 3, aes(color = as.factor(Replicate))) +
+  geom_smooth(method = "lm", se = T, lwd = 1, color = "black") +
+  facet_grid(analyte~AreaID, scales = "free") +
+  theme_tufte() +
+  theme(axis.line = element_line())
+
+# and water blanks
+
+ggplot(data = survey_N %>% 
+         filter(is.na(AreaType)) %>%
+         mutate(analyte = factor(analyte,
+                                 levels = c("uMN", "uMO2", "uMNOx", "uMNH4"),
+                                 labels = c("N", "O2", "NOx", "NH4"))),
+       aes(x = elapsedTime, y = umols)) +
+  geom_point(shape = 1, size = 3, aes(color = as.factor(Replicate))) +
+  geom_smooth(method = "lm", se = T, lwd = 1, color = "black") +
+  facet_grid(analyte~AreaID, scales = "free") +
+  theme_tufte() +
+  theme(axis.line = element_line())
+```
+
+```{r survey slurry rate regressions}
+
+# regressions WITH OUTLIERS REMOVED
+
+survey_reg <- as_tibble(survey_N %>%
+                          mutate(umols = ifelse(RemoveN == "Y" & analyte == "uMN", NA,
+                                                ifelse(RemoveO2 == "Y" & analyte == "uMO2", NA, 
+                                                       ifelse(RemoveNOx == "Y" & analyte == "uMNOx", NA,
+                                                              ifelse(RemoveNH4 == "Y" & analyte == "uMNH4", NA, umols)))))) %>%
+  group_by(AreaID, analyte) %>%
+  nest() %>%
+  mutate(fit = map(data, ~lm(umols ~ elapsedTime, data = .x)),
+         tidied = map(fit, tidy),
+         glanced = map(fit, glance),
+         augmented = map(fit, augment))
+
+# pull slopes and correct for water blank rate estimates
+survey_slope <- survey_reg %>%
+  unnest(tidied, glanced) %>%
+  dplyr::select(c("AreaID", "analyte", "term", "estimate", "adj.r.squared", "p.value")) %>%
+  mutate(term = ifelse(term == "(Intercept)", NA, term),
+         estimate_WBcorrected = ifelse(analyte == "uMN", (estimate - 0.00796),
+                                       ifelse(analyte == "uMO2", (estimate - (-0.38341)),
+                                              ifelse(analyte == "uMNH4", (estimate - (-0.039774)),
+                                                     ifelse(analyte == "uMNOx", (estimate - 0.00004), estimate))))) %>%
+  drop_na(term)
+
+
+```
+
+```{r calculate flux}
+# calculate flux (umols hr-1 m-2) for each analyte
+# ...and nutrient flux (NOx + NH4)
+# ...and denitrification efficiency for all samples that showed nutrient efflux/production
+# ...and coupled nitrification-denitrification for all samples that showed NOx production
+# remove outliers for N2 (OA10) and DIN (N10)
+survey_flux <- left_join(survey_slope, survey_cores) %>%
+  mutate(flux_umols_hr_m2 = (estimate_WBcorrected/AMicrocosm_cm2)*10000) %>%
+  dplyr::select("AreaID", "analyte", "flux_umols_hr_m2") %>%
+  pivot_wider(names_from = "analyte",
+              values_from = "flux_umols_hr_m2") %>%
+  mutate(DIN = uMNOx + uMNH4,
+         DNF = ifelse(DIN < 0, 100, (uMN/(DIN + uMN))*100),
+         DNFc = ifelse(uMNOx > 0, uMN + uMNOx, 0),
+         SourceSink = ifelse(DNF < 50, "source", "sink")) %>%
+  right_join(density %>% filter(Year == "2023")) %>%
+  filter(uMN > 0,
+         DIN < 200) %>%
+  ungroup() 
+
+# calculate proportion of DIN flux that is made up of NH4 flux
+survey_flux %>%
+  mutate(DIN_abs = abs(uMNH4) + abs(uMNOx),
+         NH4_prop = (abs(uMNH4)/DIN_abs)*100) %>%
+  summarize(mean = mean(NH4_prop),
+            se = se(NH4_prop))
+
+```
+
+```{r mussel presence effects on N2 flux and Denitrifcation Efficiency}
+N2_presence <- bf(uMN ~ AreaType) + Gamma(link = "log")
+DIN_presence <- bf(DIN ~ AreaType)
+
+survey_presence <- brm(
+  N2_presence + DIN_presence,
+  data = survey_flux,
+  chains = 4,
+  cores = 4,
+  iter = 10000,
+  backend = "cmdstanr",
+  refresh = 0
+)
+
+pp_check(survey_presence, ndraws = 100, resp = "uMN")
+pp_check(survey_presence, ndraws = 100, resp = "DIN")
+
+# summarize posteriors
+
+survey_presence_pos <- merge(summarise_draws(survey_presence), 
+                         summarise_draws(survey_presence, ~quantile(.x, probs = c(0.025, 0.975))), 
+                         by = "variable") %>%
+  mutate(Sample = "sediment slurry",
+         Predictor = "mussel presence")
+
+
+survey_presence_plot <- plot(conditional_effects(survey_presence),
+     points = TRUE,
+     theme = theme_tufte(),
+     point_args = list(width = .15),
+     ask = FALSE)
+
+```
+
+```{r local density effects on flux}
+N2_local <- bf(uMN ~ 1 + LocalMusselDensity_m2)
+DIN_local <- bf(DIN ~ 1 + LocalMusselDensity_m2) 
+
+survey_local <- brm(
+  N2_local + DIN_local + set_rescor(FALSE),
+  data = survey_flux,
+  chains = 4,
+  cores = 4,
+  iter = 10000,
+  backend = "cmdstanr",
+  refresh = 0
+)
+
+# check fit
+
+pp_check(survey_local, ndraws = 100, resp = "uMN")
+pp_check(survey_local, ndraws = 100, resp = "DIN")
+
+# summarize posteriors
+
+survey_local_pos <- merge(summarise_draws(survey_local), 
+                         summarise_draws(survey_local, ~quantile(.x, probs = c(0.025, 0.975))), 
+                         by = "variable") %>%
+  mutate(Sample = "sediment slurry",
+         Predictor = "local mussel density")
+
+
+survey_local_plot <- plot(conditional_effects(survey_local),
+     points = TRUE,
+     theme = theme_tufte(),
+     ask = FALSE)
+
+bayes_R2(survey_local)
+
+```
+
+```{r neighboring density effects on flux}
+# neighborhood effects
+
+N2_neigh <- bf(uMN ~ 1 + NeighboringMusselDensity_9pim2) 
+DIN_neigh <- bf(DIN ~ 1 + NeighboringMusselDensity_9pim2)
+
+survey_neigh <- brm(
+  N2_neigh + DIN_neigh + set_rescor(FALSE),
+  data = survey_flux,
+  chains = 4,
+  cores = 4,
+  iter = 10000,
+  backend = "cmdstanr",
+  refresh = 0
+)
+
+# check fit
+
+pp_check(survey_neigh, ndraws = 100, resp = "uMN")
+pp_check(survey_neigh, ndraws = 100, resp = "DIN")
+
+# summarize posteriors
+
+survey_neigh_pos <- merge(summarise_draws(survey_neigh), 
+                         summarise_draws(survey_neigh, ~quantile(.x, probs = c(0.025, 0.975))), 
+                         by = "variable") %>%
+  mutate(Sample = "sediment slurry",
+         Predictor = "neighboring mussel density")
+
+
+survey_neigh_plot <- plot(conditional_effects(survey_neigh),
+     points = TRUE,
+     theme = theme_tufte(),
+     ask = FALSE)
+
+bayes_R2(survey_neigh)
+```
+
+```{r survey slurry plots for export}
+
+# presence
+
+survey_presence_plot[["uMN.uMN_AreaType"]] +
+  ylim(0, 40) +
+  theme_tufte()+
+  theme(axis.line = element_line())
+
+survey_presence_plot[["DIN.DIN_AreaType"]] +
+  ylim(-25, 100) +
+  theme_tufte()+
+  theme(axis.line = element_line())
+
+# density 
+
+survey_local_plot[["uMN.uMN_LocalMusselDensity_m2"]] +
+  ylim(0, 40) +
+  xlim(0, 350) +
+  theme(axis.line = element_line())
+
+survey_neigh_plot[["uMN.uMN_NeighboringMusselDensity_9pim2"]] +
+  ylim(0, 40) +
+  xlim(0, 600) +
+  theme(axis.line = element_line())
+
+survey_local_plot[["DIN.DIN_LocalMusselDensity_m2"]] +
+  ylim(-25, 100) +
+  xlim(0, 350) +
+  theme(axis.line = element_line())
+
+survey_neigh_plot[["DIN.DIN_NeighboringMusselDensity_9pim2"]] +
+  ylim(-25, 100) +
+  xlim(0, 600) +
+  theme(axis.line = element_line())
+
+```
+
+```{r supplemental figures }
+
+# crab density by area type
+ggplot(data = crabsAndstems %>% 
+         group_by(AreaType) %>%
+         summarize(mean = mean(CrabBurrowDensity_.25m2),
+                   se = se(CrabBurrowDensity_.25m2)), aes(x = AreaType, y = mean)) +
+  geom_bar(stat = "identity") +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se)) +
+  theme_tufte() +
+  theme(axis.line = element_line())
+
+# stem density by area type
+
+ggplot(data = crabsAndstems %>% 
+         group_by(AreaType) %>%
+         summarize(mean = mean(StemDensity_m2),
+                   se = se(StemDensity_m2)), aes(x = AreaType, y = mean)) +
+  geom_bar(stat = "identity") +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se)) +
+  theme_tufte() +
+  theme(axis.line = element_line())
+
+
+# denitrification efficiency raw data by area type
+ggplot(data = survey_flux, aes(x = LocalMusselDensity_m2, y = DNF)) +
+  geom_point() +
+  geom_hline(yintercept = 50, linewidth = 1.5, linetype = "dashed") +
+  ylim(0, 100) +
+  xlim(0, 350) +
+  theme_tufte() +
+  theme(axis.line = element_line())
+
+ggplot(data = survey_flux, aes(x = NeighboringMusselDensity_9pim2, y = DNF)) +
+  geom_point() +
+  geom_hline(yintercept = 50, linewidth = 1.5, linetype = "dashed") +
+  ylim(0, 100) +
+  xlim(0, 600) +
+  theme_tufte() +
+  theme(axis.line = element_line())
+  
+
+```
+
+```{r supplemental tables summarizing model estimates}
+
+# bulk geochemistry
+ModelEstimateFT <- list(pw_group_pos, pw_local_pos, pw_neigh_pos,
+                        leaf_presence_pos, leaf_local_pos, leaf_neigh_pos,
+                        survey_presence_pos, survey_local_pos, survey_neigh_pos)  %>%
+  bind_rows() %>%
+  mutate(median = round(median, digits = 4)) %>%
+  rename('Median Estimate' = "median",
+         lower = "2.5%",
+         upper = "97.5%") %>%
+  mutate(lower = round(lower, digits = 4),
+         upper = round(upper, digits = 4),
+         '95% CI' = paste("(", lower, ",", " ", upper, ")", sep = ""),
+         Response = ifelse(str_detect(variable, "b_group") == T, "NH",
+                           ifelse(Sample == "porewater" & str_detect(variable, "Density") == T, "NH", 
+                                  ifelse(str_detect(variable, "b_Area") == T, "",
+                                         ifelse(Sample == "leaf clip" & str_detect(variable, "Density") == T, "",
+                                                ifelse(str_detect(variable, "b_DIN") == TRUE, "NH + NO",
+                                                       ifelse(str_detect(variable, "b_uMN") == TRUE, "N", NA)))))),
+         Response = ifelse(str_detect(variable, "Intercept") == TRUE, NA, Response)) %>%
+  drop_na(Response) %>%
+  arrange(factor(Sample, levels = c("porewater", "leaf clip", "sediment slurry")), 
+          factor(Predictor, levels = c("sample location", "mussel presence", "local mussel density","neighboring mussel density")), 
+          Response) %>%
+  dplyr::select(c(Sample, Predictor, Response, 'Median Estimate', '95% CI')) %>%
+  flextable() %>%
+  merge_v(j = c('Sample', 'Predictor')) %>%
+  align(align = "left", part = "all") %>%
+  valign(valign = "top") %>%
+  width(j = c('Predictor', '95% CI'), width = 4, unit = "cm") %>%
+  width(j = 'Response', width = 5, unit = "cm") %>%
+  border_inner_h()
+
+save_as_pptx(ModelEstimateFT, path = "Figures/ModelEstimateSummary_new.pptx")
+
+
+
+```
+
+
+
+
+
+
+
+###Experimental ratio slurries
+
+```{plot raw response data to determine outlier removal for ratio expermient}
+
+# 6 hr should be removed 
+ggplot(data = ratio_N %>% 
+         #filter(Ratio != "WB") %>%
+         mutate(analyte = factor(analyte,
+                                 levels = c("uMN", "uMO2", "uMNOx", "uMNH4"),
+                                 labels = c("N", "O2", "NOx", "NH4"))),
+       aes(x = elapsedTime, y = umols)) +
+  geom_point(shape = 1, size = 3, aes(color = as.factor(Replicate))) +
+  geom_smooth(method = "lm", se = T, lwd = 1, color = "black") +
+  facet_grid(analyte~Ratio, scales = "free") +
+  theme_tufte() +
+  theme(axis.line = element_line())
+
+```
+
+```{r ratio slurry rate regressions}
+ratio_regdata <- ratio_N %>%
+  mutate(umols = ifelse(RemoveN == "Y" & analyte == "uMN", NA,
+                               ifelse(RemoveO2 == "Y" & analyte == "uMO2", NA, 
+                                      ifelse(RemoveNOx == "Y" & analyte == "uMNOx", NA,
+                                             ifelse(RemoveNH4 == "Y" & analyte == "uMNH4", NA, umols)))))
+
+N2_ratio <- bf(umols ~ 0 + elapsedTime*Ratio)
+
+ratio_model <- brm(
+  N2_ratio,
+  data = ratio_regdata,
+  chains = 4,
+  cores = 4,
+  iter = 10000,
+  backend = "cmdstanr",
+  refresh = 0
+)
+
+# check fit
+
+pp_check(ratio_model, ndraws = 100, resp = "umols")
+
+# summarize posteriors
+
+ratio_pos <- merge(summarise_draws(ratio_model), 
+                         summarise_draws(ratio_model, ~quantile(.x, probs = c(0.025, 0.975))), 
+                         by = "variable")
+
+# hypothesis testing
+hypothesis(ratio_model, "elapsedTime + elapsedTime:Ratio50BD50S = elapsedTime + elapsedTime:Ratio25BD75S", robust = T)[[1]]
+
+ratio_plot <- plot(conditional_effects(ratio_model),
+     points = TRUE,
+     theme = theme_tufte(),
+     ask = FALSE)
+
+ratio_plot_ordered <- ratio_plot[["elapsedTime:Ratio"]][["data"]] %>%
+  mutate(ratios = as.factor(effect2__, levels = c("100B", "100S",)))
+
+ratio_plot[["elapsedTime:Ratio"]]+ 
+  facet_wrap(~effect2__, ncol = 5) +
+  theme(axis.line = element_line())
+```
+
+```{r ratio slurry rate regressions}
+# regressions WITH OUTLIERS REMOVED
+
+ratio_reg <- as_tibble(survey_MIMS %>%
+                          mutate(umols = ifelse(RemoveN == "Y" & analyte == "uMN", NA,
+                                                ifelse(RemoveO2 == "Y" & analyte == "uMO2", NA, umols)))) %>%
+  group_by(AreaID, analyte) %>%
+  nest() %>%
+  mutate(fit = map(data, ~lm(umols ~ elapsedTime, data = .x)),
+         tidied = map(fit, tidy),
+         glanced = map(fit, glance),
+         augmented = map(fit, augment))
+
+# pull slopes and correct for water blank rate estimates
+
+survey_slope <- survey_reg %>%
+  unnest(tidied, glanced) %>%
+  dplyr::select(c("AreaID", "analyte", "term", "estimate", "adj.r.squared")) %>%
+  mutate(term = ifelse(term == "(Intercept)", NA, term),
+         estimate_WBcorrected = ifelse(analyte == "uMN", (estimate - 0.00822),
+                                       ifelse(analyte == "uMO2", (estimate - (-0.38341)), NA))) %>%
+  drop_na(term)
+
+```
